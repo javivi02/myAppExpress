@@ -1,13 +1,13 @@
 // const express = require('express')
 import express from "express";
-import {conexiondb} from "./db.js";
+import {conexion} from "./db.js";
+import cors from "cors";
 
 const app = express();
 app.use(express.json());
-const PORT = 3000;
+app.use(cors());
 
-const conexion = conexiondb();
-conexion.connect();
+const PORT = 3005;
 
 //console.log(conexion)
 
@@ -35,6 +35,33 @@ app.get('/trabajos', (req, res) => {
     });
 });
 
+app.post('/login', (req, res) => {
+
+    //console.log(req.body);
+
+    const user = req.body;
+    if (!user) {
+        return res.status(400).send({error: true, message: 'No hay usuarios'});
+    }
+
+    const data =[user.usuario, user.password];
+
+    conexion.query('SELECT * FROM usuarios WHERE usuario = ? and password = ?', data,
+        (error, results, fields) => {
+
+            console.log(results.length)
+            if (error) throw error;
+
+            results.length === 0
+                ? res.send({error: true, data: results, message: 'No existe el usuario'})
+                : res.send({error: false, data: results, message: 'Resultado del login'});
+
+            return res.send();
+    });
+
+})
+
+
 app.post('/usuario', (req, res) => {
     console.log(req.body)
 
@@ -59,5 +86,13 @@ app.listen(PORT, () => {
     console.log(`Aplicacion escuchando en el puerto ${PORT}`)
 });
 
+
+/*app.put('/update/:id', (req, res) => {
+    const data = [req.body.firstname, req.body.lastname, req.body.roll_number, req.params.id];
+    connection.query('UPDATE student SET firstname = ?, lastname = ?, roll_number = ? WHERE id = ?', data, (error, result, fields) => {
+        if (error) throw error;
+        res.send(result);
+    })
+});*/
 
 
